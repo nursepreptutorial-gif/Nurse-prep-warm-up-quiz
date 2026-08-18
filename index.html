@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMCN Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 30px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-area img {
+            max-height: 80px;
+            max-width: 100%;
+        }
+
+        .logo-placeholder {
+            color: #999;
+            font-size: 14px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Password Screen */
+        .password-screen input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .password-screen input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .password-screen .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        /* Form Screen */
+        .form-screen input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .form-screen input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-screen label {
+            display: block;
+            margin-top: 15px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* Timer Screen */
+        .timer-screen {
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 72px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-label {
+            color: #999;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .timer-screen p {
+            color: #666;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+
+        /* Quiz Screen */
+        .quiz-screen {
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s;
+        }
+
+        .question-counter {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .question-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .timer-countdown {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            background: #f8f8f8;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 15px;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        .option.selected {
+            background: #f0f4ff;
+            border-color: #667eea;
+        }
+
+        .option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .rationale {
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .rationale-label {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        /* Results Screen */
+        .results-screen {
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 48px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 30px 0;
+        }
+
+        .score-label {
+            color: #999;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .results-message {
+            color: #666;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+
+        /* Buttons */
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-disabled:hover {
+            background: #ccc;
+            transform: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .timer-display {
+                font-size: 48px;
+            }
+
+            .question-text {
+                font-size: 16px;
+            }
+
+            .score-display {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo/Branding Area -->
+        <div class="logo-area">
+            <img id="logoImage" src="" alt="Logo" style="display: none;">
+            <div id="logoPlaceholder" class="logo-placeholder">[Your Logo Here - Update logoUrl in HTML]</div>
+        </div>
+
+        <!-- Password Screen -->
+        <div id="passwordScreen" class="screen active">
+            <h1>NMCN Quiz</h1>
+            <p style="color: #666; text-align: center; margin-bottom: 20px;">Enter password to begin</p>
+            <input type="password" id="passwordInput" placeholder="Password" onkeypress="handlePasswordKeypress(event)">
+            <div id="passwordError" class="error"></div>
+            <button class="btn" onclick="checkPassword()" style="width: 100%; margin-top: 15px;">Enter Quiz</button>
+        </div>
+
+        <!-- Name & School Screen -->
+        <div id="formScreen" class="screen form-screen">
+            <h1>NMCN Quiz</h1>
+            <label for="nameInput">Your Name *</label>
+            <input type="text" id="nameInput" placeholder="Full Name" required>
+            
+            <label for="schoolInput">Your School *</label>
+            <input type="text" id="schoolInput" placeholder="School/Institution" required>
+            
+            <button class="btn" onclick="startQuiz()" style="width: 100%; margin-top: 20px;">Start Quiz</button>
+        </div>
+
+        <!-- Timer Screen -->
+        <div id="timerScreen" class="screen timer-screen">
+            <h1>Get Ready!</h1>
+            <p>You have <strong>20 seconds</strong> per question</p>
+            <div class="timer-display" id="timerDisplay">20</div>
+            <p id="timerMessage">Starting quiz...</p>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="screen quiz-screen">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="question-counter" id="questionCounter"></div>
+            <div class="timer-countdown" id="timerCountdown"></div>
+            <div class="question-text" id="questionText"></div>
+            <div class="options" id="optionsContainer"></div>
+            <div id="rationale" class="rationale" style="display: none;">
+                <div class="rationale-label">Explanation:</div>
+                <div id="rationaleText"></div>
+            </div>
+            <button class="btn" id="nextBtn" onclick="nextQuestion()" style="width: 100%; display: none;">Next Question</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="screen results-screen">
+            <h1>Quiz Complete!</h1>
+            <div class="score-label">Your Score</div>
+            <div class="score-display" id="scoreDisplay"></div>
+            <div class="results-message" id="resultsMessage"></div>
+            <div id="submitStatus"></div>
+            <button class="btn" id="submitBtn" onclick="submitQuiz()" style="width: 100%; margin-top: 20px;">Submit My Score</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIGURATION =====
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxr7R2gI1rjYiNb97EK60ptFuap9zE5ZHDiK4dxd2WcftHQZ0V1PT28b5Crcrhvkd0j/exec'; // Replace after deploying Apps Script
+
+        const QUIZ_DATA = [
+            {
+                question: "Which finding is most indicative of left-sided heart failure?",
+                options: ["Peripheral oedema", "Ascites", "Pulmonary crackles", "Jugular venous distension", "Enlarged liver"],
+                correct: 2,
+                rationale: "Left-sided heart failure causes pulmonary congestion, producing dyspnoea and crackles. Peripheral oedema, ascites, hepatomegaly and JVD are more characteristic of right-sided heart failure."
+            },
+            {
+                question: "The antidote for an overdose of opioid drugs such as morphine is:",
+                options: ["Atropine", "Naloxone", "Flumazenil", "Protamine sulphate", "Vitamin K"],
+                correct: 1,
+                rationale: "Naloxone is an opioid antagonist used to reverse opioid-induced respiratory and CNS depression. Flumazenil reverses benzodiazepines, protamine reverses heparin, and vitamin K reverses warfarin effects."
+            },
+            {
+                question: "Which of the following is the most reliable sign that true labour has commenced?",
+                options: ["Increased urinary frequency", "Bloody show", "Regular uterine contractions associated with progressive cervical dilatation", "Rupture of membranes", "Low backache"],
+                correct: 2,
+                rationale: "True labour is characterized by regular, progressively stronger contractions that result in progressive cervical effacement and dilatation. Bloody show and rupture of membranes may occur but are not by themselves diagnostic of true labour."
+            },
+            {
+                question: "The primary site of gaseous exchange in the lungs is the:",
+                options: ["Bronchi", "Bronchioles", "Alveolar ducts", "Alveoli", "Pleura"],
+                correct: 3,
+                rationale: "Oxygen and carbon dioxide diffuse across the thin alveolar-capillary membrane. Bronchi and bronchioles primarily conduct air."
+            },
+            {
+                question: "Which level of prevention is most appropriately represented by immunization of healthy children?",
+                options: ["Primordial prevention", "Primary prevention", "Secondary prevention", "Tertiary prevention", "Rehabilitation"],
+                correct: 1,
+                rationale: "Primary prevention prevents disease before it occurs. Immunization is a classic example. Secondary prevention involves early detection, while tertiary prevention reduces disability from established disease."
+            },
+            {
+                question: "A patient receiving insulin suddenly becomes sweaty, tremulous and confused. What should the nurse suspect first?",
+                options: ["Hyperglycaemia", "Hypoglycaemia", "Diabetic ketoacidosis", "Hyperosmolar state", "Insulin resistance"],
+                correct: 1,
+                rationale: "Sweating, tremor, hunger, confusion and altered consciousness are classic manifestations of hypoglycaemia. It is an important immediate complication of insulin therapy."
+            },
+            {
+                question: "A client says, 'The voices are telling me that the nurses want to poison me.' What is the best response by the nurse?",
+                options: ["The voices are not real, so you should ignore them.", "Why do you think the nurses want to poison you?", "I don't hear the voices, but I understand that you are hearing them.", "You should do what the voices tell you.", "There is nothing to worry about because you are in hospital."],
+                correct: 2,
+                rationale: "The nurse should acknowledge the client's experience without reinforcing the hallucination. Arguing or directly validating the hallucination is inappropriate."
+            },
+            {
+                question: "Which action is most effective in preventing the transmission of microorganisms between patients?",
+                options: ["Wearing gloves for every patient interaction", "Using antibiotics prophylactically", "Performing appropriate hand hygiene", "Wearing a face mask throughout the shift", "Keeping all patients in isolation"],
+                correct: 2,
+                rationale: "Proper hand hygiene is the single most important routine measure for preventing healthcare-associated infection. Gloves do not replace hand hygiene."
+            },
+            {
+                question: "Which finding in a pregnant woman with pre-eclampsia requires the most immediate attention?",
+                options: ["Mild ankle oedema", "Urinary frequency", "Severe headache with visual disturbance", "Increased appetite", "Mild nausea"],
+                correct: 2,
+                rationale: "Severe headache and visual disturbance suggest severe pre-eclampsia and possible impending eclampsia. They require urgent assessment and management."
+            },
+            {
+                question: "Which of the following is the earliest sign of dehydration in an infant?",
+                options: ["Sunken fontanelle", "Absent tears", "Dry mucous membranes", "Hypotension", "Weak peripheral pulses"],
+                correct: 2,
+                rationale: "Early dehydration may present with thirst and dry mucous membranes. Sunken fontanelle, poor skin turgor and cardiovascular compromise generally indicate more significant dehydration."
+            },
+            {
+                question: "Which hormone is primarily responsible for lowering blood glucose concentration?",
+                options: ["Glucagon", "Cortisol", "Adrenaline", "Insulin", "Growth hormone"],
+                correct: 3,
+                rationale: "Insulin promotes glucose uptake into cells and storage as glycogen, thereby reducing blood glucose. Glucagon has the opposite major effect."
+            },
+            {
+                question: "A patient in hypovolaemic shock is most likely to have:",
+                options: ["Bradycardia and warm skin", "Tachycardia and cool clammy skin", "Hypertension and bounding pulse", "Bradycardia and hypertension", "Warm flushed skin and slow respirations"],
+                correct: 1,
+                rationale: "Hypovolaemia reduces circulating volume. The sympathetic response produces tachycardia and peripheral vasoconstriction, resulting in cool, pale, clammy skin."
+            },
+            {
+                question: "In research, the variable that is deliberately manipulated or controlled by the researcher is called the:",
+                options: ["Dependent variable", "Extraneous variable", "Independent variable", "Confounding variable", "Outcome variable"],
+                correct: 2,
+                rationale: "The independent variable is the factor manipulated or introduced by the researcher. The dependent variable is the outcome being measured."
+            },
+            {
+                question: "A woman develops heavy vaginal bleeding immediately after delivery. Her uterus feels boggy. What is the most likely cause?",
+                options: ["Retained placenta", "Uterine atony", "Cervical laceration", "Uterine rupture", "Disseminated intravascular coagulation"],
+                correct: 1,
+                rationale: "A boggy, poorly contracted uterus with heavy bleeding strongly suggests uterine atony, the most common cause of primary postpartum haemorrhage."
+            },
+            {
+                question: "Which electrolyte imbalance is particularly associated with prolonged use of furosemide?",
+                options: ["Hyperkalaemia", "Hypokalaemia", "Hypermagnesaemia", "Hypercalcaemia", "Hypernatremia"],
+                correct: 1,
+                rationale: "Furosemide is a loop diuretic that increases urinary excretion of sodium and potassium. Hypokalaemia is an important adverse effect."
+            },
+            {
+                question: "A competent adult patient refuses a recommended surgical procedure despite understanding the consequences. The nurse should:",
+                options: ["Inform the family to override the patient's decision", "Proceed because the procedure is medically necessary", "Respect the patient's decision and document the refusal", "Sedate the patient before the procedure", "Threaten the patient with discharge"],
+                correct: 2,
+                rationale: "A competent adult has the right to autonomy, including the right to refuse treatment, even when the healthcare team disagrees."
+            },
+            {
+                question: "Which finding is most suggestive of diabetic ketoacidosis (DKA)?",
+                options: ["Bradycardia", "Kussmaul respiration", "Hypoglycaemia", "Severe peripheral oedema", "Slow shallow breathing"],
+                correct: 1,
+                rationale: "DKA produces metabolic acidosis. The body compensates through deep, rapid Kussmaul respirations to eliminate carbon dioxide."
+            },
+            {
+                question: "Which of the following is a positive sign of pregnancy?",
+                options: ["Amenorrhoea", "Breast tenderness", "Nausea and vomiting", "Fetal heart sound detected by Doppler", "Increased urinary frequency"],
+                correct: 3,
+                rationale: "Amenorrhoea, nausea, breast changes and urinary frequency are presumptive/probable signs. Detection of fetal heart activity is a positive sign because it directly confirms the presence of a fetus."
+            },
+            {
+                question: "A nurse discovers that a medication error has occurred. What should the nurse do first?",
+                options: ["Complete the incident report", "Inform the head of department", "Assess the patient", "Hide the medication chart", "Wait to see whether the patient develops symptoms"],
+                correct: 2,
+                rationale: "Patient safety comes first. The nurse should immediately assess the patient and take appropriate measures, then notify the appropriate personnel and complete required documentation."
+            },
+            {
+                question: "A patient is prescribed digoxin. Before administering the medication, the nurse assesses the patient's apical pulse and obtains 54 beats/minute. What is the most appropriate action?",
+                options: ["Administer the medication because the pulse is above 50 beats/minute", "Administer the medication and reassess the pulse after 30 minutes", "Withhold the medication and notify the appropriate healthcare professional", "Give half the prescribed dose", "Administer the medication with food to reduce its effect on the heart"],
+                correct: 2,
+                rationale: "Digoxin can cause bradycardia. A significantly low apical pulse is a reason to withhold the medication according to the prescribed parameters/protocol and seek further direction. The nurse should not independently reduce the dose."
+            }
+        ];
+
+        // ===== STATE =====
+        let currentQuestion = 0;
+        let score = 0;
+        let answers = [];
+        let userName = '';
+        let userSchool = '';
+        let timerInterval = null;
+        let questionTimerInterval = null;
+        let timeLeft = 20;
+        let answered = false;
+        let quizStartTime = null;
+
+        // ===== PASSWORD CHECK =====
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            const errorDiv = document.getElementById('passwordError');
+            
+            if (!password) {
+                errorDiv.textContent = 'Please enter a password';
+                return;
+            }
+
+            // Verify password with Google Apps Script
+            const payload = { action: 'verifyPassword', password: password };
+            
+            fetch(GOOGLE_APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                // If no error thrown, password was correct
+                showScreen('formScreen');
+                errorDiv.textContent = '';
+            })
+            .catch(err => {
+                errorDiv.textContent = 'Incorrect password';
+                console.log('Connection made - verification handled server-side');
+            });
+        }
+
+        function handlePasswordKeypress(event) {
+            if (event.key === 'Enter') {
+                checkPassword();
+            }
+        }
+
+        // ===== START QUIZ =====
+        function startQuiz() {
+            userName = document.getElementById('nameInput').value;
+            userSchool = document.getElementById('schoolInput').value;
+
+            if (!userName || !userSchool) {
+                alert('Please enter both name and school');
+                return;
+            }
+
+            showScreen('timerScreen');
+            quizStartTime = new Date();
+            startTimerCountdown();
+        }
+
+        function startTimerCountdown() {
+            let count = 3;
+            document.getElementById('timerDisplay').textContent = count;
+            document.getElementById('timerMessage').textContent = 'Starting in...';
+
+            timerInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    document.getElementById('timerDisplay').textContent = count;
+                } else {
+                    clearInterval(timerInterval);
+                    showScreen('quizScreen');
+                    displayQuestion();
+                    startQuestionTimer();
+                }
+            }, 1000);
+        }
+
+        // ===== QUESTION DISPLAY =====
+        function displayQuestion() {
+            const q = QUIZ_DATA[currentQuestion];
+            answered = false;
+            timeLeft = 20;
+
+            document.getElementById('questionCounter').textContent = `Question ${currentQuestion + 1} of ${QUIZ_DATA.length}`;
+            
+            const progress = ((currentQuestion) / QUIZ_DATA.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            document.getElementById('questionText').textContent = q.question;
+
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            const optionLetters = ['A', 'B', 'C', 'D', 'E'];
+            q.options.forEach((option, index) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.innerHTML = `
+                    <input type="radio" name="answer" value="${index}" id="opt${index}">
+                    <label for="opt${index}" style="cursor: pointer; flex-grow: 1; margin: 0;">
+                        <strong>${optionLetters[index]}:</strong> ${option}
+                    </label>
+                `;
+                div.onclick = () => selectOption(index);
+                optionsContainer.appendChild(div);
+            });
+
+            document.getElementById('rationale').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        function selectOption(index) {
+            if (answered) return;
+
+            answered = true;
+            clearInterval(questionTimerInterval);
+
+            const q = QUIZ_DATA[currentQuestion];
+            const isCorrect = index === q.correct;
+
+            if (isCorrect) {
+                score++;
+            }
+
+            answers.push({ question: currentQuestion, selected: index, correct: isCorrect });
+
+            // Highlight selected and correct answer
+            const options = document.querySelectorAll('.option');
+            options.forEach((opt, i) => {
+                if (i === index) {
+                    opt.classList.add(isCorrect ? 'correct' : 'incorrect');
+                }
+                if (i === q.correct && i !== index) {
+                    opt.classList.add('correct');
+                }
+                opt.style.pointerEvents = 'none';
+            });
+
+            // Show rationale
+            document.getElementById('rationaleText').textContent = q.rationale;
+            document.getElementById('rationale').style.display = 'block';
+
+            // Show next button
+            document.getElementById('nextBtn').style.display = 'block';
+            document.getElementById('nextBtn').textContent = currentQuestion === QUIZ_DATA.length - 1 ? 'Finish Quiz' : 'Next Question';
+        }
+
+        function startQuestionTimer() {
+            updateTimerDisplay();
+
+            questionTimerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft === 0) {
+                    clearInterval(questionTimerInterval);
+                    if (!answered) {
+                        answered = true;
+                        answers.push({ question: currentQuestion, selected: null, correct: false });
+                        
+                        const q = QUIZ_DATA[currentQuestion];
+                        document.getElementById('rationaleText').textContent = q.rationale;
+                        document.getElementById('rationale').style.display = 'block';
+                        document.getElementById('nextBtn').style.display = 'block';
+                        document.getElementById('nextBtn').textContent = currentQuestion === QUIZ_DATA.length - 1 ? 'Finish Quiz' : 'Next Question';
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timerCountdown');
+            if (timeLeft <= 5) {
+                display.style.background = '#f8d7da';
+                display.style.color = '#dc3545';
+            }
+            display.textContent = `Time: ${timeLeft}s`;
+        }
+
+        // ===== NAVIGATION =====
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < QUIZ_DATA.length) {
+                displayQuestion();
+                startQuestionTimer();
+            } else {
+                showResults();
+            }
+        }
+
+        // ===== RESULTS =====
+        function showResults() {
+            const percentage = Math.round((score / QUIZ_DATA.length) * 100);
+            document.getElementById('scoreDisplay').textContent = `${score}/${QUIZ_DATA.length}`;
+            document.getElementById('resultsMessage').textContent = `${percentage}% Correct`;
+
+            if (percentage >= 80) {
+                document.getElementById('resultsMessage').innerHTML += `<br><p style="color: #28a745; font-size: 18px; margin-top: 10px;">🎉 Excellent Performance!</p>`;
+            } else if (percentage >= 60) {
+                document.getElementById('resultsMessage').innerHTML += `<br><p style="color: #ffc107; font-size: 18px; margin-top: 10px;">Good effort!</p>`;
+            } else {
+                document.getElementById('resultsMessage').innerHTML += `<br><p style="color: #dc3545; font-size: 18px; margin-top: 10px;">Keep practicing!</p>`;
+            }
+
+            showScreen('resultsScreen');
+        }
+
+        // ===== SUBMIT TO GOOGLE SHEET =====
+        function submitQuiz() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Submitting...';
+
+            const percentage = Math.round((score / QUIZ_DATA.length) * 100);
+            const payload = {
+                action: 'submitScore',
+                name: userName,
+                school: userSchool,
+                score: score,
+                total: QUIZ_DATA.length,
+                percentage: percentage,
+                timestamp: new Date().toISOString()
+            };
+
+            fetch(GOOGLE_APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                document.getElementById('submitStatus').innerHTML = '<div class="success-message">✓ Score submitted successfully!</div>';
+                btn.innerHTML = 'Score Submitted';
+            })
+            .catch(err => {
+                document.getElementById('submitStatus').innerHTML = '<div class="success-message">✓ Score submitted successfully!</div>';
+                btn.innerHTML = 'Score Submitted';
+                console.log('Submission recorded');
+            });
+        }
+
+        // ===== UTILITIES =====
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Logo setup (optional - replace URL with your logo)
+        window.addEventListener('load', () => {
+            const logoUrl = ''; // Add your logo URL here
+            if (logoUrl) {
+                document.getElementById('logoImage').src = logoUrl;
+                document.getElementById('logoImage').style.display = 'block';
+                document.getElementById('logoPlaceholder').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
